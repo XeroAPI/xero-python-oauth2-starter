@@ -29,8 +29,11 @@ To obtain your API keys, follow these steps and create a Xero app
 * Click the "Save" button. You secret is now hidden.
 
 ## Configure API keys
-You'll need to update your code where ever there is a client_id, client_secret
-<!-- todo add config.py file description -->
+* Create a `config.py` file in the root of this project & add the 2 variables
+```python
+CLIENT_ID = "...client id string..."
+CLIENT_SECRET = "...client secret string..."
+```
 
 Sample Python code from app.py  <!-- todo add example code -->
 
