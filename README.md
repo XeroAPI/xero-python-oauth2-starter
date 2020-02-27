@@ -5,8 +5,15 @@ This is a starter app with the code to perform OAuth 2.0 authentication
 You'll be able to connect to a Xero Organisation and make real API calls - we recommend you connect to the Demo company.
 
 ## Getting Started
-<!-- Todo add steps to configure this project. -->
 
+### Prerequirements
+* python3 installed
+* git installed
+
+### Local installation
+* Create new python virtual environment by running `python3 -m venv venv`
+* Activate new virtual environment by running `source venv/bin/activate`
+* Install project dependencies by running `pip install -r requirements.txt`
 
 ## Create a Xero App
 To obtain your API keys, follow these steps and create a Xero app
@@ -28,12 +35,13 @@ You'll need to update your code where ever there is a client_id, client_secret
 Sample Python code from app.py  <!-- todo add example code -->
 
 ## Take it for a spin
-Launch your browser and navigate to http://localhost:5000/login (or whatever the correct path is). 
 
-- You should see a connect to xero link.
-- Click the link, login to Xero (if you aren't already)
-- Grant access to your user account and select the Demo company to connect to.
-- Done - try out the different API calls
+* Make sure your python virtual environment activated `source venv/bin/activate`
+* Start flask application `python3 app.py`
+* Launch your browser and navigate to http://localhost:5000/login 
+* You should be redirected to Xero login page.
+* Grant access to your user account and select the Demo company to connect to.
+* Done - try out the different API calls  (#TODO)
 
 ## License
 

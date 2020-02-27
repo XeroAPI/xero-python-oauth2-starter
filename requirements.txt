@@ -1,0 +1,4 @@
+flask
+# Werkzeug<1.0  # flask-oauthlib not compatible
+# using patched version of flask-oauthlib
+git+https://github.com/ageis/flask-oauthlib.git@c5ea3ace957ceeeeab3cfb6556f32685ff292eab#egg=Flask-OAuthlib
