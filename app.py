@@ -53,5 +53,12 @@ def oauth_callback():
     return redirect(url_for("index", _external=True))
 
 
+@app.route("/logout")
+def logout():
+    session["xero_access"] = None
+    session.modified = True
+    return redirect(url_for("index", _external=True))
+
+
 if __name__ == "__main__":
     app.run()
