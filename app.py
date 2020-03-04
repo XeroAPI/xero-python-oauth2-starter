@@ -3,10 +3,13 @@ import json
 
 from flask import Flask, url_for, render_template, session, redirect
 from flask_oauthlib.client import OAuth, OAuthException
+from flask_session import Session
 
 app = Flask(__name__)
 app.config.from_object("default_settings")
 app.config.from_pyfile("config.py", silent=True)
+
+Session(app)
 
 oauth = OAuth(app)
 xero = oauth.remote_app(
