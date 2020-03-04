@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, url_for, jsonify
+from flask import Flask, url_for, jsonify, render_template
 from flask_oauthlib.client import OAuth, OAuthException
 
 app = Flask(__name__)
@@ -19,8 +19,7 @@ xero = oauth.remote_app(
 
 @app.route("/")
 def hello_world():
-    # todo add index html page with links different endpoints in this app
-    return "Hello World!"
+    return render_template("index.html", title="Home")
 
 
 @app.route("/login")
