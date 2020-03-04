@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, url_for, jsonify, render_template
+import json
+
+from flask import Flask, url_for, render_template, session, redirect
 from flask_oauthlib.client import OAuth, OAuthException
 
 app = Flask(__name__)
@@ -18,8 +20,9 @@ xero = oauth.remote_app(
 
 
 @app.route("/")
-def hello_world():
-    return render_template("index.html", title="Home")
+def index():
+    xero_access = session.get("xero_access") or {}
+    return render_template("index.html", title="Home", xero=json.dumps(xero_access))
 
 
 @app.route("/login")
@@ -45,7 +48,9 @@ def oauth_callback():
     # todo validate state value
     if response is None or response.get("access_token") is None:
         return "Access denied: response=%s" % response
-    return jsonify(response)
+    session["xero_access"] = dict(response)
+    session.modified = True
+    return redirect(url_for("index", _external=True))
 
 
 if __name__ == "__main__":
