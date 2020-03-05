@@ -11,6 +11,7 @@ app.config.from_pyfile("config.py", silent=True)
 
 Session(app)
 
+# TODO fetch config from https://identity.xero.com/.well-known/openid-configuration #1
 oauth = OAuth(app)
 xero = oauth.remote_app(
     name="xero",
@@ -21,7 +22,11 @@ xero = oauth.remote_app(
     authorization_url="https://login.xero.com/identity/connect/authorize",
     access_token_url="https://identity.xero.com/connect/token",
     refresh_token_url="https://identity.xero.com/connect/token",
-    scope="offline_access openid profile email accounting.transactions",
+    scope="offline_access openid profile email accounting.transactions "
+    "accounting.transactions.read accounting.reports.read "
+    "accounting.journals.read accounting.settings accounting.settings.read "
+    "accounting.contacts accounting.contacts.read accounting.attachments "
+    "accounting.attachments.read",
 )  # type: OAuth2Application
 
 
@@ -46,26 +51,32 @@ def index():
     )
 
 
-@app.route("/connections")
+@app.route("/tenants")
 def tenants():
     response = xero.get("/connections")
+    available_tenants = response.json()
+    for tenant in available_tenants:
+        if tenant["tenantType"] == "ORGANISATION":
+            response = xero.get(
+                "/api.xro/2.0/organisation/",
+                headers={
+                    "xero-tenant-id": tenant["tenantId"],
+                    "Accept": "application/json",
+                },
+            )
+            tenant["organisation"] = response.json()
+
     return render_template(
         "tenants.html",
         title="Xero Tenants",
-        tenants=json.dumps(response.json(), sort_keys=True, indent=4),
+        tenants=json.dumps(available_tenants, sort_keys=True, indent=4),
     )
 
 
 @app.route("/login")
 def login():
-    params = {
-        "scope": "openid profile email accounting.transactions",
-        "state": "123",  # todo make it dynamic and pass it to callback
-    }
     redirect_url = url_for("oauth_callback", _external=True)
-    print(redirect_url)
     response = xero.authorize(callback_uri=redirect_url)
-    print(response.headers["Location"])
     return response
 
 
@@ -85,20 +96,7 @@ def oauth_callback():
 
 @app.route("/logout")
 def logout():
-    session["xero_access"] = None
-    session.modified = True
-    return redirect(url_for("index", _external=True))
-
-
-@app.route("/refresh_token")
-def oauth_refresh_token():
-    try:
-        result = xero.generate_request_token()
-    except Exception as e:
-        print(e)
-        raise
-    session["xero_refresh"] = result
-    session.modified = True
+    store_xero_token(None)
     return redirect(url_for("index", _external=True))
 
 
