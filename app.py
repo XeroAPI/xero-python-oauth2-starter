@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import json
 
-from flask import Flask, url_for, render_template, session, redirect
+from flask import Flask, url_for, render_template, session, redirect, json
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 
@@ -53,18 +52,25 @@ def index():
 
 @app.route("/tenants")
 def tenants():
+    import xero_python
+
     response = xero.get("/connections")
     available_tenants = response.json()
+
+    configuration = xero_python.Configuration()
+    configuration.client_id = app.config["CLIENT_ID"]
+    configuration.client_secret = app.config["CLIENT_SECRET"]
+    client = xero.make_client(obtain_xero_token())
+    api_instance = xero_python.AccountingApi(
+        xero_python.ApiClient(client, configuration)
+    )
+
     for tenant in available_tenants:
         if tenant["tenantType"] == "ORGANISATION":
-            response = xero.get(
-                "/api.xro/2.0/organisation/",
-                headers={
-                    "xero-tenant-id": tenant["tenantId"],
-                    "Accept": "application/json",
-                },
+            response2 = api_instance.get_organisations(
+                xero_tenant_id=tenant["tenantId"]
             )
-            tenant["organisation"] = response.json()
+            tenant["organisations"] = response2.to_dict()
 
     return render_template(
         "tenants.html",
