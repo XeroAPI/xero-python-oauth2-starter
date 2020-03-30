@@ -53,25 +53,36 @@ def index():
 
 @app.route("/tenants")
 def tenants():
-    import xero_python
+    from xero_python.accounting import AccountingApi
+    from xero_python.api_client import ApiClient
+    from xero_python.api_client.oauth2 import OAuth2Token
+    from xero_python.api_client.configuration import Configuration
+    from xero_python.identity import IdentityApi
 
-    response = xero.get("/connections")
-    available_tenants = response.json()
+    xero_token = obtain_xero_token()
+    if not xero_token:
+        return redirect(url_for("login", _external=True))
 
-    configuration = xero_python.Configuration()
-    configuration.client_id = app.config["CLIENT_ID"]
-    configuration.client_secret = app.config["CLIENT_SECRET"]
-    client = xero.make_client(obtain_xero_token())
-    api_instance = xero_python.AccountingApi(
-        xero_python.ApiClient(client, configuration)
+    configuration = Configuration()
+    configuration.oauth2_token = OAuth2Token(
+        client_id=app.config["CLIENT_ID"],
+        client_secret=app.config["CLIENT_SECRET"],
+        **xero_token
     )
+    api_client = ApiClient(configuration, pool_threads=1)
+    identity_api = IdentityApi(api_client)
+    accounting_api = AccountingApi(api_client)
 
-    for tenant in available_tenants:
-        if tenant["tenantType"] == "ORGANISATION":
-            response2 = api_instance.get_organisations(
-                xero_tenant_id=tenant["tenantId"]
+    available_tenants = []
+    for connection in identity_api.get_connections():
+        tenant = connection.to_dict()
+        if connection.tenant_type == "ORGANISATION":
+            organisations = accounting_api.get_organisations(
+                xero_tenant_id=connection.tenant_id
             )
-            tenant["organisations"] = response2.to_dict()
+            tenant["organisations"] = organisations.to_dict()
+
+        available_tenants.append(tenant)
 
     return render_template(
         "tenants.html",
