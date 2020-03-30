@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from io import BytesIO
 
-from flask import Flask, url_for, render_template, session, redirect, json
+from flask import Flask, url_for, render_template, session, redirect, json, send_file
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 
@@ -104,6 +105,22 @@ def oauth_callback():
 def logout():
     store_xero_token(None)
     return redirect(url_for("index", _external=True))
+
+
+@app.route("/export-token")
+def export_token():
+    token = obtain_xero_token()
+    if not token:
+        return redirect(url_for("index", _external=True))
+
+    buffer = BytesIO("token={!r}".format(token).encode("utf-8"))
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        mimetype="x.python",
+        as_attachment=True,
+        attachment_filename="oauth2_token.py",
+    )
 
 
 if __name__ == "__main__":
