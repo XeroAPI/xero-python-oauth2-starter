@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from io import BytesIO
+from logging.config import dictConfig
 
 from flask import Flask, url_for, render_template, session, redirect, json, send_file
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
+
+import logging_settings
+
+dictConfig(logging_settings.default_settings)
+
 
 app = Flask(__name__)
 app.config.from_object("default_settings")
@@ -64,6 +70,7 @@ def tenants():
         return redirect(url_for("login", _external=True))
 
     configuration = Configuration()
+    configuration.debug = app.config["DEBUG"]
     configuration.oauth2_token = OAuth2Token(
         client_id=app.config["CLIENT_ID"],
         client_secret=app.config["CLIENT_SECRET"],
