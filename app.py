@@ -5,18 +5,24 @@ from logging.config import dictConfig
 from flask import Flask, url_for, render_template, session, redirect, json, send_file
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
+from xero_python.accounting import AccountingApi
+from xero_python.api_client import ApiClient
+from xero_python.api_client.configuration import Configuration
+from xero_python.api_client.oauth2 import OAuth2Token
+from xero_python.identity import IdentityApi
 
 import logging_settings
 
 dictConfig(logging_settings.default_settings)
 
-
+# configure main flask application
 app = Flask(__name__)
 app.config.from_object("default_settings")
 app.config.from_pyfile("config.py", silent=True)
-
+# configure persistent session cache
 Session(app)
 
+# configure flask-oauthlib application
 # TODO fetch config from https://identity.xero.com/.well-known/openid-configuration #1
 oauth = OAuth(app)
 xero = oauth.remote_app(
@@ -36,12 +42,27 @@ xero = oauth.remote_app(
 )  # type: OAuth2Application
 
 
+# configure xero-python sdk client
+api_client = ApiClient(
+    Configuration(
+        debug=app.config["DEBUG"],
+        oauth2_token=OAuth2Token(
+            client_id=app.config["CLIENT_ID"], client_secret=app.config["CLIENT_SECRET"]
+        ),
+    ),
+    pool_threads=1,
+)
+
+
+# configure token persistence and exchange point between flask-oauthlib and xero-python
 @xero.tokengetter
+@api_client.oauth2_token_getter
 def obtain_xero_token():
     return session.get("token")
 
 
 @xero.tokensaver
+@api_client.oauth2_token_saver
 def store_xero_token(token):
     session["token"] = token
     session.modified = True
@@ -59,24 +80,10 @@ def index():
 
 @app.route("/tenants")
 def tenants():
-    from xero_python.accounting import AccountingApi
-    from xero_python.api_client import ApiClient
-    from xero_python.api_client.oauth2 import OAuth2Token
-    from xero_python.api_client.configuration import Configuration
-    from xero_python.identity import IdentityApi
-
     xero_token = obtain_xero_token()
     if not xero_token:
         return redirect(url_for("login", _external=True))
 
-    configuration = Configuration()
-    configuration.debug = app.config["DEBUG"]
-    configuration.oauth2_token = OAuth2Token(
-        client_id=app.config["CLIENT_ID"],
-        client_secret=app.config["CLIENT_SECRET"],
-        **xero_token
-    )
-    api_client = ApiClient(configuration, pool_threads=1)
     identity_api = IdentityApi(api_client)
     accounting_api = AccountingApi(api_client)
 
