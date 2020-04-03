@@ -57,20 +57,20 @@ api_client = ApiClient(
 # configure token persistence and exchange point between flask-oauthlib and xero-python
 @xero.tokengetter
 @api_client.oauth2_token_getter
-def obtain_xero_token():
+def obtain_xero_oauth2_token():
     return session.get("token")
 
 
 @xero.tokensaver
 @api_client.oauth2_token_saver
-def store_xero_token(token):
+def store_xero_oauth2_token(token):
     session["token"] = token
     session.modified = True
 
 
 @app.route("/")
 def index():
-    xero_access = dict(obtain_xero_token() or {})
+    xero_access = dict(obtain_xero_oauth2_token() or {})
     return render_template(
         "index.html",
         title="Home",
@@ -80,7 +80,7 @@ def index():
 
 @app.route("/tenants")
 def tenants():
-    xero_token = obtain_xero_token()
+    xero_token = obtain_xero_oauth2_token()
     if not xero_token:
         return redirect(url_for("login", _external=True))
 
@@ -122,19 +122,19 @@ def oauth_callback():
     # todo validate state value
     if response is None or response.get("access_token") is None:
         return "Access denied: response=%s" % response
-    store_xero_token(response)
+    store_xero_oauth2_token(response)
     return redirect(url_for("index", _external=True))
 
 
 @app.route("/logout")
 def logout():
-    store_xero_token(None)
+    store_xero_oauth2_token(None)
     return redirect(url_for("index", _external=True))
 
 
 @app.route("/export-token")
 def export_token():
-    token = obtain_xero_token()
+    token = obtain_xero_oauth2_token()
     if not token:
         return redirect(url_for("index", _external=True))
 
