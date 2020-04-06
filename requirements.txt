@@ -1,4 +1,8 @@
 flask
+# Werkzeug<1.0  # flask-session not compatible
+# see https://github.com/fengsp/flask-session/pull/114
+# using patched version of flask-session
+git+https://github.com/SqrtMinusOne/flask-session.git@560d00f1a84a9924d788a4f4e1ef35c5cf94c76d#egg=Flask-Session
 # Werkzeug<1.0  # flask-oauthlib not compatible
 # using patched version of flask-oauthlib
 git+https://github.com/ageis/flask-oauthlib.git@c5ea3ace957ceeeeab3cfb6556f32685ff292eab#egg=Flask-OAuthlib
