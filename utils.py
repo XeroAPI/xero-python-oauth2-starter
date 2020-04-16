@@ -12,7 +12,7 @@ class JSONEncoder(json.JSONEncoder):
             return o.isoformat()
         if isinstance(o, date):
             return o.isoformat()
-        if isinstance(o, uuid.UUID):
+        if isinstance(o, (uuid.UUID, Decimal)):
             return str(o)
         return super(JSONEncoder, self).default(o)
 

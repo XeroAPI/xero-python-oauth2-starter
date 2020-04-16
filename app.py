@@ -206,6 +206,23 @@ def create_multiple_contacts():
     )
 
 
+@app.route("/invoices")
+@xero_token_required
+def get_invoices():
+    xero_tenant_id = get_xero_tenant_id()
+    accounting_api = AccountingApi(api_client)
+
+    invoices = accounting_api.get_invoices(
+        xero_tenant_id, statuses=["DRAFT", "SUBMITTED"]
+    )
+    code = serialize_model(invoices)
+    sub_title = "Total invoices found: {}".format(len(invoices.invoices))
+
+    return render_template(
+        "code.html", title="Invoices", code=code, sub_title=sub_title
+    )
+
+
 @app.route("/login")
 def login():
     redirect_url = url_for("oauth_callback", _external=True)
