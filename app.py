@@ -159,6 +159,53 @@ def create_contact_person():
     )
 
 
+@app.route("/create-multiple-contacts")
+@xero_token_required
+def create_multiple_contacts():
+    xero_tenant_id = get_xero_tenant_id()
+    accounting_api = AccountingApi(api_client)
+
+    contact = Contact(
+        name="George Jetson",
+        first_name="George",
+        last_name="Jetson",
+        email_address="george.jetson@aol.com",
+    )
+    # Add the same contact twice - the first one will succeed, but the
+    # second contact will fail with a validation error which we'll show.
+    contacts = Contacts(contacts=[contact, contact])
+    try:
+        created_contacts = accounting_api.create_contacts(
+            xero_tenant_id, contacts=contacts, summarize_errors=False
+        )  # type: Contacts
+    except ApiException as exception:
+        error = json.loads(exception.body, parse_float=Decimal)
+        sub_title = "Error: " + nested_gettattr(
+            error, "Elements.0.ValidationErrors.0.Message", ""
+        )
+        result_list = None
+        code = jsonify(error)
+    else:
+        sub_title = ""
+        result_list = []
+        for contact in created_contacts.contacts:
+            if contact.has_validation_errors:
+                error = nested_gettattr(contact.validation_errors, "0.message", "")
+                result_list.append("Error: {}".format(error))
+            else:
+                result_list.append("Contact {} created.".format(contact.name))
+
+        code = serialize_model(created_contacts)
+
+    return render_template(
+        "code.html",
+        title="Create Multiple Contacts",
+        code=code,
+        result_list=result_list,
+        sub_title=sub_title,
+    )
+
+
 @app.route("/login")
 def login():
     redirect_url = url_for("oauth_callback", _external=True)
