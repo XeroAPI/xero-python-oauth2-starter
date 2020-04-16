@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from decimal import Decimal
 from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
@@ -6,13 +7,15 @@ from logging.config import dictConfig
 from flask import Flask, url_for, render_template, session, redirect, json, send_file
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
-from xero_python.accounting import AccountingApi
+from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts
 from xero_python.api_client import ApiClient
 from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
 from xero_python.identity import IdentityApi
+from xero_python.rest import ApiException
 
 import logging_settings
+from utils import nested_gettattr, jsonify, serialize_model
 
 dictConfig(logging_settings.default_settings)
 
@@ -39,7 +42,7 @@ xero = oauth.remote_app(
     "accounting.transactions.read accounting.reports.read "
     "accounting.journals.read accounting.settings accounting.settings.read "
     "accounting.contacts accounting.contacts.read accounting.attachments "
-    "accounting.attachments.read",
+    "accounting.attachments.read assets projects",
 )  # type: OAuth2Application
 
 
@@ -115,6 +118,47 @@ def tenants():
     )
 
 
+@app.route("/create-contact-person")
+@xero_token_required
+def create_contact_person():
+    xero_tenant_id = get_xero_tenant_id()
+    accounting_api = AccountingApi(api_client)
+
+    contact_person = ContactPerson(
+        first_name="John",
+        last_name="Smith",
+        email_address="john.smith@24locks.com",
+        include_in_emails=True,
+    )
+    contact = Contact(
+        name="FooBar",
+        first_name="Foo",
+        last_name="Bar",
+        email_address="ben.bowden@24locks.com",
+        contact_persons=[contact_person],
+    )
+    contacts = Contacts(contacts=[contact])
+    try:
+        created_contacts = accounting_api.create_contacts(
+            xero_tenant_id, contacts=contacts
+        )  # type: Contacts
+    except ApiException as exception:
+        error = json.loads(exception.body, parse_float=Decimal)
+        sub_title = "Error: " + nested_gettattr(
+            error, "Elements.0.ValidationErrors.0.Message", ""
+        )
+        code = jsonify(error)
+    else:
+        sub_title = "Contact {} created.".format(
+            nested_gettattr(created_contacts, "contacts.0.name", "")
+        )
+        code = serialize_model(created_contacts)
+
+    return render_template(
+        "code.html", title="Create Contacts", code=code, sub_title=sub_title
+    )
+
+
 @app.route("/login")
 def login():
     redirect_url = url_for("oauth_callback", _external=True)
@@ -154,6 +198,17 @@ def export_token():
         as_attachment=True,
         attachment_filename="oauth2_token.py",
     )
+
+
+def get_xero_tenant_id():
+    token = obtain_xero_oauth2_token()
+    if not token:
+        return None
+
+    identity_api = IdentityApi(api_client)
+    for connection in identity_api.get_connections():
+        if connection.tenant_type == "ORGANISATION":
+            return connection.tenant_id
 
 
 if __name__ == "__main__":
