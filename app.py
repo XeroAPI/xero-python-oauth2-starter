@@ -85,9 +85,9 @@ def xero_token_required(function):
 def index():
     xero_access = dict(obtain_xero_oauth2_token() or {})
     return render_template(
-        "index.html",
-        title="Home",
-        token=json.dumps(xero_access, sort_keys=True, indent=4),
+        "code.html",
+        title="Home | oauth token",
+        code=json.dumps(xero_access, sort_keys=True, indent=4),
     )
 
 
@@ -109,9 +109,9 @@ def tenants():
         available_tenants.append(tenant)
 
     return render_template(
-        "tenants.html",
+        "code.html",
         title="Xero Tenants",
-        tenants=json.dumps(available_tenants, sort_keys=True, indent=4),
+        code=json.dumps(available_tenants, sort_keys=True, indent=4),
     )
 
 
