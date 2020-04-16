@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
 
@@ -68,6 +69,18 @@ def store_xero_oauth2_token(token):
     session.modified = True
 
 
+def xero_token_required(function):
+    @wraps(function)
+    def decorator(*args, **kwargs):
+        xero_token = obtain_xero_oauth2_token()
+        if not xero_token:
+            return redirect(url_for("login", _external=True))
+
+        return function(*args, **kwargs)
+
+    return decorator
+
+
 @app.route("/")
 def index():
     xero_access = dict(obtain_xero_oauth2_token() or {})
@@ -79,11 +92,8 @@ def index():
 
 
 @app.route("/tenants")
+@xero_token_required
 def tenants():
-    xero_token = obtain_xero_oauth2_token()
-    if not xero_token:
-        return redirect(url_for("login", _external=True))
-
     identity_api = IdentityApi(api_client)
     accounting_api = AccountingApi(api_client)
 
@@ -133,11 +143,9 @@ def logout():
 
 
 @app.route("/export-token")
+@xero_token_required
 def export_token():
     token = obtain_xero_oauth2_token()
-    if not token:
-        return redirect(url_for("index", _external=True))
-
     buffer = BytesIO("token={!r}".format(token).encode("utf-8"))
     buffer.seek(0)
     return send_file(
