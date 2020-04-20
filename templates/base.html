@@ -5,11 +5,14 @@
     <title>{% if title %}{{ title }}{% else %}Welcome to Xero Python oauth starter{% endif %}</title>
 </head>
 <body>
-<a href="{{ url_for('index') }}">Index</a>
-<a href="{{ url_for('login') }}">Login</a>
-<a href="{{ url_for('logout') }}">Logout</a>
-<a href="{{ url_for('tenants') }}">Tenants</a>
-<a href="{{ url_for('export_token') }}">Export Token</a>
+<a href="{{ url_for('index') }}">Index</a> |
+<a href="{{ url_for('login') }}">Login</a> |
+<a href="{{ url_for('logout') }}">Logout</a> |
+<a href="{{ url_for('tenants') }}">Tenants</a> |
+<a href="{{ url_for('export_token') }}">Export Token</a> |
+<a href="{{ url_for('create_contact_person') }}">Create Contact</a> |
+<a href="{{ url_for('create_multiple_contacts') }}">Create Multiple Contacts</a> |
+<a href="{{ url_for('get_invoices') }}">Invoices</a> |
 {% block content %}{% endblock %}
 <!--<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>-->
 </body>
