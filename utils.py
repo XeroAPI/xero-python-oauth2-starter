@@ -5,6 +5,8 @@ from datetime import datetime, date
 from decimal import Decimal
 from functools import singledispatch
 
+from xero_python.api_client.serializer import serialize
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -22,7 +24,7 @@ def parse_json(data):
 
 
 def serialize_model(model):
-    return jsonify(model.to_dict())
+    return jsonify(serialize(model))
 
 
 def jsonify(data):

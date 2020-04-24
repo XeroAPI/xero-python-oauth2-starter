@@ -8,7 +8,7 @@ from flask import Flask, url_for, render_template, session, redirect, json, send
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts
-from xero_python.api_client import ApiClient
+from xero_python.api_client import ApiClient, serialize
 from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
 from xero_python.identity import IdentityApi
@@ -102,12 +102,12 @@ def tenants():
 
     available_tenants = []
     for connection in identity_api.get_connections():
-        tenant = connection.to_dict()
+        tenant = serialize(connection)
         if connection.tenant_type == "ORGANISATION":
             organisations = accounting_api.get_organisations(
                 xero_tenant_id=connection.tenant_id
             )
-            tenant["organisations"] = organisations.to_dict()
+            tenant["organisations"] = serialize(organisations)
 
         available_tenants.append(tenant)
 
