@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from decimal import Decimal
 from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
@@ -8,14 +7,15 @@ from flask import Flask, url_for, render_template, session, redirect, json, send
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts
-from xero_python.api_client import ApiClient
+from xero_python.api_client import ApiClient, serialize
 from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
+from xero_python.exceptions import AccountingBadRequestException
 from xero_python.identity import IdentityApi
-from xero_python.rest import ApiException
+from xero_python.utils import getvalue
 
 import logging_settings
-from utils import nested_gettattr, jsonify, serialize_model
+from utils import jsonify, serialize_model
 
 dictConfig(logging_settings.default_settings)
 
@@ -102,12 +102,12 @@ def tenants():
 
     available_tenants = []
     for connection in identity_api.get_connections():
-        tenant = connection.to_dict()
+        tenant = serialize(connection)
         if connection.tenant_type == "ORGANISATION":
             organisations = accounting_api.get_organisations(
                 xero_tenant_id=connection.tenant_id
             )
-            tenant["organisations"] = organisations.to_dict()
+            tenant["organisations"] = serialize(organisations)
 
         available_tenants.append(tenant)
 
@@ -142,15 +142,12 @@ def create_contact_person():
         created_contacts = accounting_api.create_contacts(
             xero_tenant_id, contacts=contacts
         )  # type: Contacts
-    except ApiException as exception:
-        error = json.loads(exception.body, parse_float=Decimal)
-        sub_title = "Error: " + nested_gettattr(
-            error, "Elements.0.ValidationErrors.0.Message", ""
-        )
-        code = jsonify(error)
+    except AccountingBadRequestException as exception:
+        sub_title = "Error: " + exception.reason
+        code = jsonify(exception.error_data)
     else:
         sub_title = "Contact {} created.".format(
-            nested_gettattr(created_contacts, "contacts.0.name", "")
+            getvalue(created_contacts, "contacts.0.name", "")
         )
         code = serialize_model(created_contacts)
 
@@ -178,19 +175,16 @@ def create_multiple_contacts():
         created_contacts = accounting_api.create_contacts(
             xero_tenant_id, contacts=contacts, summarize_errors=False
         )  # type: Contacts
-    except ApiException as exception:
-        error = json.loads(exception.body, parse_float=Decimal)
-        sub_title = "Error: " + nested_gettattr(
-            error, "Elements.0.ValidationErrors.0.Message", ""
-        )
+    except AccountingBadRequestException as exception:
+        sub_title = "Error: " + exception.reason
         result_list = None
-        code = jsonify(error)
+        code = jsonify(exception.error_data)
     else:
         sub_title = ""
         result_list = []
         for contact in created_contacts.contacts:
             if contact.has_validation_errors:
-                error = nested_gettattr(contact.validation_errors, "0.message", "")
+                error = getvalue(contact.validation_errors, "0.message", "")
                 result_list.append("Error: {}".format(error))
             else:
                 result_list.append("Contact {} created.".format(contact.name))

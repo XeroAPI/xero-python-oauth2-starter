@@ -3,7 +3,8 @@ import json
 import uuid
 from datetime import datetime, date
 from decimal import Decimal
-from functools import singledispatch
+
+from xero_python.api_client.serializer import serialize
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -22,45 +23,8 @@ def parse_json(data):
 
 
 def serialize_model(model):
-    return jsonify(model.to_dict())
+    return jsonify(serialize(model))
 
 
 def jsonify(data):
     return json.dumps(data, sort_keys=True, indent=4, cls=JSONEncoder)
-
-
-def nested_gettattr(value, path, default=None):
-    paths = path.split(".")
-    return get_nested(value, *paths, default=default)
-
-
-@singledispatch
-def get_nested(value, path, *paths, default=None):
-    value = getattr(value, path, default)
-    if paths:
-        return get_nested(value, *paths, default=default)
-
-    return value
-
-
-@get_nested.register(dict)
-def get_nested_dict(value, path, *paths, default=None):
-    value = value.get(path, default)
-    if paths:
-        return get_nested(value, *paths, default=default)
-
-    return value
-
-
-@get_nested.register(list)
-@get_nested.register(tuple)
-def get_nested_dict(value, path, *paths, default=None):
-    try:
-        value = value[int(path)]
-    except IndexError:
-        value = default
-
-    if paths:
-        return get_nested(value, *paths, default=default)
-
-    return value
