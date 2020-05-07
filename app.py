@@ -258,6 +258,19 @@ def export_token():
     )
 
 
+@app.route("/refresh-token")
+@xero_token_required
+def refresh_token():
+    xero_token = obtain_xero_oauth2_token()
+    new_token = api_client.refresh_oauth2_token()
+    return render_template(
+        "code.html",
+        title="Xero OAuth2 token",
+        code=jsonify({"Old Token": xero_token, "New token": new_token}),
+        sub_title="token refreshed",
+    )
+
+
 def get_xero_tenant_id():
     token = obtain_xero_oauth2_token()
     if not token:
