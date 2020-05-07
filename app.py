@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from decimal import Decimal
 from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
@@ -11,8 +10,8 @@ from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contac
 from xero_python.api_client import ApiClient, serialize
 from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
+from xero_python.exceptions import AccountingBadRequestException
 from xero_python.identity import IdentityApi
-from xero_python.rest import ApiException
 from xero_python.utils import getvalue
 
 import logging_settings
@@ -143,12 +142,9 @@ def create_contact_person():
         created_contacts = accounting_api.create_contacts(
             xero_tenant_id, contacts=contacts
         )  # type: Contacts
-    except ApiException as exception:
-        error = json.loads(exception.body, parse_float=Decimal)
-        sub_title = "Error: " + getvalue(
-            error, "Elements.0.ValidationErrors.0.Message", ""
-        )
-        code = jsonify(error)
+    except AccountingBadRequestException as exception:
+        sub_title = "Error: " + exception.reason
+        code = jsonify(exception.error_data)
     else:
         sub_title = "Contact {} created.".format(
             getvalue(created_contacts, "contacts.0.name", "")
@@ -179,13 +175,10 @@ def create_multiple_contacts():
         created_contacts = accounting_api.create_contacts(
             xero_tenant_id, contacts=contacts, summarize_errors=False
         )  # type: Contacts
-    except ApiException as exception:
-        error = json.loads(exception.body, parse_float=Decimal)
-        sub_title = "Error: " + getvalue(
-            error, "Elements.0.ValidationErrors.0.Message", ""
-        )
+    except AccountingBadRequestException as exception:
+        sub_title = "Error: " + exception.reason
         result_list = None
-        code = jsonify(error)
+        code = jsonify(exception.error_data)
     else:
         sub_title = ""
         result_list = []
