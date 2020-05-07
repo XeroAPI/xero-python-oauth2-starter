@@ -13,9 +13,10 @@ from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
 from xero_python.identity import IdentityApi
 from xero_python.rest import ApiException
+from xero_python.utils import getvalue
 
 import logging_settings
-from utils import nested_gettattr, jsonify, serialize_model
+from utils import jsonify, serialize_model
 
 dictConfig(logging_settings.default_settings)
 
@@ -144,13 +145,13 @@ def create_contact_person():
         )  # type: Contacts
     except ApiException as exception:
         error = json.loads(exception.body, parse_float=Decimal)
-        sub_title = "Error: " + nested_gettattr(
+        sub_title = "Error: " + getvalue(
             error, "Elements.0.ValidationErrors.0.Message", ""
         )
         code = jsonify(error)
     else:
         sub_title = "Contact {} created.".format(
-            nested_gettattr(created_contacts, "contacts.0.name", "")
+            getvalue(created_contacts, "contacts.0.name", "")
         )
         code = serialize_model(created_contacts)
 
@@ -180,7 +181,7 @@ def create_multiple_contacts():
         )  # type: Contacts
     except ApiException as exception:
         error = json.loads(exception.body, parse_float=Decimal)
-        sub_title = "Error: " + nested_gettattr(
+        sub_title = "Error: " + getvalue(
             error, "Elements.0.ValidationErrors.0.Message", ""
         )
         result_list = None
@@ -190,7 +191,7 @@ def create_multiple_contacts():
         result_list = []
         for contact in created_contacts.contacts:
             if contact.has_validation_errors:
-                error = nested_gettattr(contact.validation_errors, "0.message", "")
+                error = getvalue(contact.validation_errors, "0.message", "")
                 result_list.append("Error: {}".format(error))
             else:
                 result_list.append("Contact {} created.".format(contact.name))
