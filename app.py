@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
@@ -23,6 +24,11 @@ dictConfig(logging_settings.default_settings)
 app = Flask(__name__)
 app.config.from_object("default_settings")
 app.config.from_pyfile("config.py", silent=True)
+
+if app.config["ENV"] != "production":
+    # allow oauth2 loop to run over http (used for local testing only)
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 # configure persistent session cache
 Session(app)
 
