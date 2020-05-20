@@ -8,4 +8,5 @@ git+https://github.com/SqrtMinusOne/flask-session.git@560d00f1a84a9924d788a4f4e1
 git+https://github.com/ageis/flask-oauthlib.git@c5ea3ace957ceeeeab3cfb6556f32685ff292eab#egg=Flask-OAuthlib
 
 # Use development version of xero-python
-git+ssh://git@github.com/xero-github/xero-python.git@020f780b4e2b48cb33746ae19ddab9fdf128e626#egg=xero-python
+#git+ssh://git@github.com/xero-github/xero-python.git@020f780b4e2b48cb33746ae19ddab9fdf128e626#egg=xero-python
+xero-python==0.2.1
