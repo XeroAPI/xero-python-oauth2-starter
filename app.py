@@ -288,5 +288,5 @@ def get_xero_tenant_id():
             return connection.tenant_id
 
 
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    app.run(host='localhost', port=5000)
