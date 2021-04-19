@@ -45,10 +45,8 @@ xero = oauth.remote_app(
     access_token_url="https://identity.xero.com/connect/token",
     refresh_token_url="https://identity.xero.com/connect/token",
     scope="offline_access openid profile email accounting.transactions "
-    "accounting.transactions.read accounting.reports.read "
-    "accounting.journals.read accounting.settings accounting.settings.read "
-    "accounting.contacts accounting.contacts.read accounting.attachments "
-    "accounting.attachments.read assets projects",
+    "accounting.reports.read accounting.journals.read accounting.settings "
+    "accounting.contacts accounting.attachments assets projects",
 )  # type: OAuth2Application
 
 

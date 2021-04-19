@@ -1,12 +1,4 @@
 flask
-# Werkzeug<1.0  # flask-session not compatible
-# see https://github.com/fengsp/flask-session/pull/114
-# using patched version of flask-session
-git+https://github.com/SqrtMinusOne/flask-session.git@560d00f1a84a9924d788a4f4e1ef35c5cf94c76d#egg=Flask-Session
-# Werkzeug<1.0  # flask-oauthlib not compatible
-# using patched version of flask-oauthlib
-git+https://github.com/ageis/flask-oauthlib.git@c5ea3ace957ceeeeab3cfb6556f32685ff292eab#egg=Flask-OAuthlib
-
-# Use development version of xero-python
-#git+ssh://git@github.com/xero-github/xero-python.git@020f780b4e2b48cb33746ae19ddab9fdf128e626#egg=xero-python
-xero-python==1.3.0
+flask-session==0.3.2
+flask-oauthlib==0.9.6
+xero-python==1.5.3
