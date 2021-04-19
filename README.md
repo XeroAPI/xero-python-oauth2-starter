@@ -22,22 +22,6 @@ Please use your Demo Company organisation for your testing.
 * Activate new virtual environment by running `source venv/bin/activate`
 * Install project dependencies by running `pip install -r requirements.txt`
 
-### Troubleshooting
-If you see an error when installing the project dependencies that looks something like ...
-
-```
-Please make sure you have the correct access rights
-and the repository exists.
-fatal: clone of 'git@github.com:mitsuhiko/flask-sphinx-themes.git' into submodule path '/private/var/folders/7d/_bchn9r12pn79fr63p88nhv80000gn/T/pip-build-myovpzcq/Flask-Session/docs/_themes' failed
-Failed to clone 'docs/_themes'. Retry scheduled
-git@github.com: Permission denied (publickey).
-```
-
-Please check that your SSH keys are setup for your github profile?
-https://github.com/settings/keys
-
-We ran into some issues with the current version of Flask-Session and had to point to a specific commit and download that code into our project. But in order to do that your [SSH keys need to be config](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh).
-
 ## Create a Xero App
 To obtain your API keys, follow these steps and create a Xero app
 
