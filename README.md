@@ -17,7 +17,7 @@ Please use your Demo Company organisation for your testing.
 * Clone this repo to your local drive.
 
 ### Local installation
-* Open terminal window and navigate to your `xero-python-oauth-starter` local drive directory 
+* Open terminal window and navigate to your `xero-python-oauth2-starter` local drive directory 
 * Create new python virtual environment by running `python3 -m venv venv`
 * Activate new virtual environment by running `source venv/bin/activate`
 * Install project dependencies by running `pip install -r requirements.txt`
