@@ -19,7 +19,7 @@ Please use your Demo Company organisation for your testing.
 ### Local installation
 * Open terminal window and navigate to your `xero-python-oauth2-starter` local drive directory 
 * Create new python virtual environment by running `python3 -m venv venv`
-* Activate new virtual environment by running `source venv/bin/activate`
+* Activate new virtual environment by running `source venv/bin/activate` Windows users need to use `venv\scripts\activate.ps1`
 * Install project dependencies by running `pip install -r requirements.txt`
 
 ## Create a Xero App
