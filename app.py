@@ -220,6 +220,18 @@ def get_invoices():
         "code.html", title="Invoices", code=code, sub_title=sub_title
     )
 
+@app.route("/contacts")
+@xero_token_required
+def get_contacts():
+    xero_tenant_id = get_xero_tenant_id()
+    accounting_api = AccountingApi(api_client) 
+    contacts = accounting_api.get_contacts(xero_tenant_id)
+    code = serialize_model(contacts)
+    sub_title = "Total Contacts found: {}".format(len(contacts.contacts))
+    return render_template(
+        "code.html", title="Contacts", code=code, sub_title=sub_title
+    )
+
 
 @app.route("/login")
 def login():
